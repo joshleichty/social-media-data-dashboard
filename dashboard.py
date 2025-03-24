@@ -31,10 +31,7 @@ st.markdown(f"""<h1 style='text-align: center;'>
             unsafe_allow_html=True)
 st.write("*Select a time period for the analysis*")
 start, end = st.beta_columns(2)
-start_date = start.date_input(
-    "Start date",
-    datetime.date.today() - datetime.timedelta(days=14)
-)
+start_date = start.date_input("Start date", datetime.date(2021, 1, 1))
 end_date = end.date_input("End date", datetime.date.today())
 
 

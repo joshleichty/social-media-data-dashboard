@@ -5,7 +5,6 @@ through the CrowdTangle API
 
 import pandas as pd
 import requests
-from constants import FB_TITLE_TO_MODE
 from facebook.data.api_utils import load_env_vars
 
 
@@ -21,7 +20,10 @@ def get_fb_posts(start_date, end_date, mode,
         df = pd.read_csv('data/sample_fb_data.csv', index_col=[0])
         return df
 
-    mode = FB_TITLE_TO_MODE[mode]
+    # temporary solution for mode not matching with
+    # its related env variable name
+    if mode == 'Ministry of Health':
+        mode = 'MOH'
 
     api_token, list_id, posts_url = load_env_vars(mode)
 
@@ -75,12 +77,9 @@ def get_fb_posts(start_date, end_date, mode,
             return df
         data = resp.json()
         df = pd.json_normalize(data['result']['posts'])
-        if df.empty:
-            final_df = df
-        else:
-            inc_df = df[keep_columns].fillna(0)
-            inc_df.columns = new_columns
-            final_df = final_df.append(inc_df, ignore_index=True)
+        inc_df = df[keep_columns].fillna(0)
+        inc_df.columns = new_columns
+        final_df = final_df.append(inc_df, ignore_index=True)
 
     if create_csv:
         final_df.to_csv('data/sample_fb_data.csv')

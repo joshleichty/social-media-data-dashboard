@@ -68,7 +68,7 @@ def display_facebook(start_date, end_date, mode):
         display_covid_predictions(posts)
 
 
-def summary(number_of_posts, mode):
+def summary(number_of_posts, accounts=None):
     st.write(f"Number of posts: {number_of_posts}")
     st.write(
         f"""
