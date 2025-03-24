@@ -4,43 +4,41 @@ Display graphs of the data
 
 import seaborn as sns
 import streamlit as st
-import matplotlib.pyplot as plt
+import altair as alt
 from facebook.processing.process_data import (
     process_posts,
-    calculate_total_interactions,
     highest_performing_posts,
-    group_post_metrics_by_date,
-    process_covid_predicitions
+    calculate_total_interactions,
+    group_posts_by_date
 )
-
 
 def display_facebook(start_date, end_date, mode):
     """
         Display Facebook posts data
     """
     posts = process_posts(start_date, end_date, mode)
-    summary(len(posts), mode)
+    summary(len(posts))
 
     with st.beta_expander("Graphs of likes and total interactions per day"):
         st.markdown("""_Total interactions = sum of all reactions
-            (like, comment, share, love, wow, haha, care,
+            (like, comment, share, love, wow, haha, care, 
             thankful, sad, angry_)
         """)
-        st.markdown("""_Zoom the graph in or out to see more
-            details for the time period chosen_
-        """)
-        grouped_posts = group_post_metrics_by_date(posts)
-        line_graph(grouped_posts)
+        grouped_posts = group_posts_by_date(posts)
+        plot_graph(grouped_posts)
 
     with st.beta_expander("Top posts for this time period"):
-        metric = st.radio(
+        metric  = st.radio(
             "Choose a metric for displaying top posts:",
             (
                 "total interactions", "like",
                 "comment", "share", "angry"
             )
         )
+
+        posts = calculate_total_interactions(posts)
         top_posts = highest_performing_posts(posts, metric)
+
         st.markdown(
             f"""<div style='padding-top: 1rem;'>
                 <strong>
@@ -50,12 +48,12 @@ def display_facebook(start_date, end_date, mode):
             """,
             unsafe_allow_html=True
         )
+
         post1, post2 = st.beta_columns(2)
         with post1:
             display_post(top_posts, metric, "Highest", 0)
         with post2:
-            if len(top_posts) == 2:
-                display_post(top_posts, metric, "Second highest", 1)
+            display_post(top_posts, metric, "Second highest", 1)
 
     with st.beta_expander("Covid posts"):
         display_covid_predictions(posts)
@@ -70,6 +68,12 @@ def summary(number_of_posts, mode):
         """
     )
 
+def plot_graph(data):
+    st.area_chart(
+        data,
+        height=500,
+        use_container_width=True
+    )
 
 def display_post(top_posts, metric, subheader, position):
     st.subheader(subheader)
@@ -86,12 +90,12 @@ def display_post(top_posts, metric, subheader, position):
     st.markdown(
         f"""<div style='margin: 1 rem; padding: 1rem;
             border: 1px solid #eee; border-radius: 1%;'>
-                <div><strong>{metric.title()} count</strong>:
+                <div><strong>{metric.title()} count</strong>: 
                     {metric_info}
                 </div>
                 <div style='padding-top: 1rem;'>
                     <p>
-                        <strong>Post type</strong>:
+                        <strong>Post type</strong>: 
                         {post_type.title()}
                     </p>
                     <p><strong>Date</strong>: {date}</p>
@@ -111,35 +115,3 @@ def display_post(top_posts, metric, subheader, position):
         """,
         unsafe_allow_html=True
     )
-
-
-def line_graph(data):
-    st.line_chart(
-        data,
-        height=500,
-        use_container_width=True
-    )
-
-
-def display_covid_predictions(posts):
-    with st.spinner("Loading predictions for COVID posts..."):
-        covid_predictions = process_covid_predicitions(posts)
-
-        pred_plot, pred_table = st.beta_columns(2)
-        with pred_plot:
-            st.subheader("Plot of COVID vs Non-COVID posts:")
-            fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(3, 2))
-            sns.set_theme(style="darkgrid")
-            ax = sns.countplot(
-                x="classification",
-                data=covid_predictions
-            )
-            st.pyplot(fig)
-        with pred_table:
-            st.subheader("More details:")
-            st.dataframe(covid_predictions[[
-                "text",
-                "classification",
-                "confidence"
-                ]]
-            )

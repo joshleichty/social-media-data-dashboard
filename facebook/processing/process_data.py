@@ -25,10 +25,8 @@ def process_posts(start_date, end_date, mode):
     posts.sort_values(by='date', inplace=True)
     posts['date'] = posts['date'].astype('datetime64')
     posts['date'] = posts['date'].dt.strftime('%b %d')
-    posts = calculate_total_interactions(posts)
-
+    
     return posts
-
 
 def calculate_total_interactions(posts):
     """
@@ -44,7 +42,6 @@ def calculate_total_interactions(posts):
 
     return posts
 
-
 def highest_performing_posts(posts, metric="total interactions"):
     """
         Pick the two posts with the highest
@@ -52,7 +49,13 @@ def highest_performing_posts(posts, metric="total interactions"):
     """
     top_posts = posts.sort_values(by=metric, ascending=False)
     top_posts.reset_index(drop=True, inplace=True)
+    
     return top_posts.head(2)
+
+def group_posts_by_date(posts):
+    posts = posts.groupby(by="date").sum()
+    return posts
+
 
 
 def group_post_metrics_by_date(posts):
