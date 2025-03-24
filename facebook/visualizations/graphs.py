@@ -19,13 +19,6 @@ def display_facebook(start_date, end_date, mode):
         Display Facebook posts data
     """
     posts = process_posts(start_date, end_date, mode)
-
-    if posts.empty:
-        st.write('No data for this time period')
-        return None
-
-    posts = calculate_total_interactions(posts)
-
     summary(len(posts), mode)
 
     with st.beta_expander("Graphs of likes and total interactions per day"):
@@ -68,7 +61,7 @@ def display_facebook(start_date, end_date, mode):
         display_covid_predictions(posts)
 
 
-def summary(number_of_posts, accounts=None):
+def summary(number_of_posts, mode):
     st.write(f"Number of posts: {number_of_posts}")
     st.write(
         f"""
